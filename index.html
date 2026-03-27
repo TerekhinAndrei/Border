@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Border</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="wrap">
+<div id="s-menu">
+  <canvas id="menu-canvas"></canvas>
+  <div class="menu-inner">
+    <div id="menu-logo" class="menu-logo">B<span class="menu-o">O</span>RDER</div>
+    <p id="menu-tagline" class="menu-tagline">Пошаговая граница. Одна кнопка — одна цена.</p>
+    <button type="button" id="menu-play" class="menu-cta">Играть</button>
+    <div class="menu-row">
+      <button type="button" id="menu-settings" class="menu-secondary">Настройки</button>
+      <button type="button" id="menu-help" class="menu-secondary">Помощь</button>
+      <button type="button" id="menu-lang" class="menu-secondary">EN</button>
+    </div>
+    <div id="menu-version" class="menu-version">веб · концепт</div>
+  </div>
+</div>
+<div id="s-settings">
+  <div class="settings-panel">
+    <div id="settings-h" class="settings-h">Настройки</div>
+    <div class="set-row">
+      <span id="set-lbl-sound" class="set-lbl">Звук</span>
+      <div class="set-toggle-group">
+        <button type="button" id="set-snd-on" class="set-tog active">вкл</button>
+        <button type="button" id="set-snd-off" class="set-tog">выкл</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span id="set-lbl-speed" class="set-lbl">Скорость роста</span>
+      <div class="set-toggle-group">
+        <button type="button" id="set-spd-slow" class="set-tog">Медленно</button>
+        <button type="button" id="set-spd-normal" class="set-tog active">Норма</button>
+        <button type="button" id="set-spd-fast" class="set-tog">Быстро</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span id="set-lbl-lang" class="set-lbl">Язык</span>
+      <div class="set-toggle-group">
+        <button type="button" id="set-lang-ru" class="set-tog active">RU</button>
+        <button type="button" id="set-lang-en" class="set-tog">EN</button>
+      </div>
+    </div>
+    <button type="button" id="settings-close" class="menu-secondary" style="margin-top:14px;width:100%">Закрыть</button>
+  </div>
+</div>
+<div id="s-help">
+  <div class="help-panel">
+    <div id="help-title" class="help-h">ИНСТРУКЦИЯ ПО ВЕДЕНИЮ ВОЙНЫ</div>
+    <div id="help-text" class="help-content"></div>
+    <button type="button" id="help-close" class="menu-secondary" style="margin-top:20px;width:100%">Вернуться</button>
+  </div>
+</div>
+<div id="s-casus">
+  <div id="cb-paper">
+    <div id="cb-toprow">
+      <div id="cb-seal">&#9670; &#9670; &#9670;</div>
+      <button type="button" id="cb-langbtn">EN</button>
+    </div>
+    <div id="cb-head">Официальное заявление МИД</div>
+    <div id="cb-body"></div>
+    <div id="cb-date"></div>
+  </div>
+  <button type="button" id="cb-btn">Во имя Родины</button>
+</div>
+<div id="s-game">
+  <div id="topbar">
+    <div class="topbar-left">
+      <button type="button" id="btn-pause" class="mbt" title="Pause">❚❚</button>
+      <div id="gtitle">Border</div>
+    </div>
+    <div id="topright">
+      <button type="button" id="lang-btn" class="mbt">EN</button>
+      <button type="button" id="mbt-ai" class="mbt on">vs ИИ</button>
+      <button type="button" id="mbt-2p" class="mbt">2 игрока</button>
+      <select id="diff-sel">
+        <option value="medium">Средний</option>
+        <option value="easy">Лёгкий</option>
+        <option value="hard">Сложный</option>
+      </select>
+    </div>
+  </div>
+  <div id="arena">
+    <canvas id="map-canvas"></canvas>
+    <canvas id="ui-canvas"></canvas>
+    <div class="pbw" id="pb-l"><div class="pbg"><div class="pbf" id="fill-l"></div><div class="pbn" id="num-l">100k</div></div></div>
+    <div class="pbw" id="pb-r"><div class="pbg"><div class="pbf" id="fill-r"></div><div class="pbn" id="num-r">100k</div></div></div>
+    <div id="m-narr"></div>
+    <div id="m-news"></div>
+    <div id="m-thresh" style="display:none"></div>
+  </div>
+  <div id="infostrip">
+    <div class="itn" id="terr-l">50%</div>
+    <div id="info-dead">погибших: 0</div>
+    <div class="itn" id="terr-r">50%</div>
+  </div>
+  <div id="mode-row">
+    <div class="mode-panel" id="mp-l">
+      <div class="mode-label" id="ml-l">Режим</div>
+      <div class="mode-btns">
+        <button type="button" class="mbtn dev" id="btn-l-dev">📈 <span class="hkh">[1]</span></button>
+        <button type="button" class="mbtn atk active-atk" id="btn-l-atk">⚔️ <span class="hkh">[2]</span></button>
+        <button type="button" class="mbtn def" id="btn-l-def">🛡️ <span class="hkh">[3]</span></button>
+      </div>
+      <div class="mode-status" id="ms-l"></div>
+      <div class="mode-cd" id="cd-l"></div>
+    </div>
+    <div class="mode-panel" id="mp-r" style="text-align:right">
+      <div class="mode-label" id="ml-r">Режим</div>
+      <div class="mode-btns">
+        <button type="button" class="mbtn def" id="btn-r-def"><span class="hkh">[7]</span> 🛡️</button>
+        <button type="button" class="mbtn atk active-atk" id="btn-r-atk"><span class="hkh">[8]</span> ⚔️</button>
+        <button type="button" class="mbtn dev" id="btn-r-dev"><span class="hkh">[9]</span> 📈</button>
+      </div>
+      <div class="mode-status" id="ms-r"></div>
+      <div class="mode-cd" id="cd-r"></div>
+    </div>
+  </div>
+  <div id="ctrl-row">
+    <button type="button" class="abtn" id="abl">&#9664; <span id="hint-abl">наступать</span> <span class="hkh">[A]</span></button>
+    <button type="button" class="abtn" id="ard"><span class="hkh">[L]</span> <span id="hint-ard">наступать</span> &#9654;</button>
+  </div>
+  <div id="statusbar"></div>
+  <div id="pause-overlay">
+    <div class="pause-panel">
+      <div id="pause-title" class="pause-title">Пауза</div>
+      <button type="button" id="pause-resume" class="menu-cta">Продолжить</button>
+      <button type="button" id="pause-restart" class="menu-secondary">Заново</button>
+      <button type="button" id="pause-menu" class="menu-secondary">В меню</button>
+    </div>
+  </div>
+</div>
+<div id="s-end">
+  <div id="e-silence">. . .</div>
+  <div id="e-title">Война окончена</div>
+  <div id="e-stats">
+    <div class="esl" id="el-l">—</div><div class="esv" id="ev-l"></div>
+    <div class="esl" id="el-r">—</div><div class="esv" id="ev-r"></div>
+    <div class="esl" id="el-t">Всего погибло</div><div class="esv big" id="ev-t"></div>
+    <div class="demo-row" id="demo-row">
+      <div class="demo-card"><span class="demo-icon">👶</span><span class="demo-num" id="d-children">—</span><span class="demo-lbl" id="dl-children">дети</span></div>
+      <div class="demo-card"><span class="demo-icon">👩</span><span class="demo-num" id="d-women">—</span><span class="demo-lbl" id="dl-women">женщины</span></div>
+      <div class="demo-card"><span class="demo-icon">👴</span><span class="demo-num" id="d-elderly">—</span><span class="demo-lbl" id="dl-elderly">старики</span></div>
+    </div>
+    <div class="esl" id="el-d">Продолжительность</div><div class="esv dim" id="ev-d"></div>
+    <div id="e-terrline"></div>
+  </div>
+  <div id="e-casus"></div>
+  <div id="e-quote"></div>
+  <div id="e-btns">
+    <button type="button" class="ebtn ebtn-memorial" id="btn-open-memorial">Назвать погибшего</button>
+  </div>
+</div>
+<!-- Экран мемориала: назвать одного из погибших -->
+<div id="s-memorial">
+  <div class="mem-inner">
+    <div class="mem-cursor">_</div>
+    <p id="mem-prompt" class="mem-prompt">Вы можете назвать одного из погибших.</p>
+    <p id="mem-sub" class="mem-sub">Введите имя — или нажмите «Пропустить».</p>
+    <input type="text" id="mem-input" class="mem-input" maxlength="60" autocomplete="off" spellcheck="false">
+    <div class="mem-btns">
+      <button type="button" id="mem-save-btn" class="menu-cta" style="width:auto;padding:10px 28px">Запомнить</button>
+    </div>
+    <div class="mem-list-wrap" id="mem-list-wrap">
+      <div id="mem-list-title" class="mem-list-title">Мемориал этой сессии</div>
+      <div id="mem-list" class="mem-list"></div>
+    </div>
+    <div class="mem-nav">
+      <button type="button" class="ebtn" id="btn-new">Новая война</button>
+      <button type="button" class="ebtn" id="btn-rematch">Реванш</button>
+      <button type="button" class="ebtn" id="btn-to-menu">В меню</button>
+    </div>
+
+  </div>
+</div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
