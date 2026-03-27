@@ -119,6 +119,12 @@ Any modern browser with ES Module and Canvas support:
 - Safari 14+
 - Edge 80+
 
+## Author
+
+Designed and developed by **Andy Terekhin**, CEO of [Terekhin Digital Crew](https://terekhindt.com).
+
+This game was created in support of world peace and as a statement against militarism. War is not a game — but sometimes a game can remind us why.
+
 ## License
 
 All rights reserved. This is a concept / portfolio project.
