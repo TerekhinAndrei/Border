@@ -4,6 +4,8 @@
 
 Two nations. One border. Every button press costs lives.
 
+### 🎮 [Play Now](https://terekhinandrei.github.io/Border/)
+
 ## About
 
 **Border** is a browser-based real-time tug-of-war where two fictional nations fight over a shared border. Population grows continuously, attacks happen in real time, and every push of the frontline costs human lives on both sides. The game deliberately confronts the player with the consequences of escalation: casualty counters, micro-stories of individual lives lost, news tickers describing a collapsing society, and a memorial screen where you can name the dead.
