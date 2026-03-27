@@ -73,6 +73,8 @@ select#diff-sel{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3p
 #mode-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0}
 .mode-panel{border:1px solid var(--border-col);background:var(--bg);padding:6px 8px;position:relative}
 .mode-label{font-size:8px;letter-spacing:1px;color:var(--ink2);text-transform:uppercase;margin-bottom:4px}
+.p-name{font-family:'Share Tech Mono',monospace;color:var(--accent);font-size:9px;letter-spacing:1.5px}
+.p-sep{opacity:0.3;margin:0 2px}
 .mode-btns{display:flex;gap:3px}
 .mbtn{font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px 0;flex:1;border:1px solid var(--border-col);background:transparent;color:var(--ink2);cursor:pointer;letter-spacing:1px;transition:all .15s;text-align:center}
 .mbtn.dev{border-color:var(--mode-dev);color:var(--mode-dev)}

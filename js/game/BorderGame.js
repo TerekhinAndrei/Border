@@ -421,6 +421,8 @@ export class BorderGame {
     this.renderer.drawMap();
 
     this.i18n.applyStaticLabels();
+    setText('p-l-name', this.t('p_p1'));
+    setText('p-r-name', this.state.gameMode === 'ai' ? this.t('p_ai') : this.t('p_p2'));
     this.setStatus(this.t('s_init'));
     this.updateModeUI('L');
     this.updateModeUI('R');
