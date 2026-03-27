@@ -85,7 +85,7 @@ select#diff-sel{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3p
 .mode-status{font-size:8px;margin-top:4px;height:12px;letter-spacing:.5px}
 .mode-cd{position:absolute;bottom:0;left:0;height:2px;background:var(--accent);transition:width .1s linear;width:0%}
 #ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex-shrink:0}
-.abtn{font-family:'Share Tech Mono',monospace;font-size:11px;padding:9px 0;border:1px solid var(--border-col);background:var(--bg);color:var(--ink);cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:transform .07s,opacity .2s;user-select:none}
+.abtn{font-family:'Share Tech Mono',monospace;font-size:11px;padding:12px 0;border:1px solid var(--border-col);background:var(--bg);color:var(--ink);cursor:pointer;letter-spacing:2px;text-transform:uppercase;transition:transform .07s,opacity .2s;user-select:none;touch-action:manipulation}
 .abtn:active{transform:scale(.97)}
 #abl{border-left:3px solid var(--zone-l)}
 #ard{border-right:3px solid var(--accent)}
@@ -210,4 +210,11 @@ select#diff-sel{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3p
 #mp-r .hkh { margin-right: 8px; margin-left: 0; }
 .abtn .hkh { font-size: 10px; opacity: 0.4; margin: 0 8px; }
 
-
+/* ─── Landscape Overlay ─── */
+#land-overlay{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);color:var(--ink);align-items:center;justify-content:center;text-align:center}
+.land-msg{font-family:'Share Tech Mono',monospace;font-size:14px;border:1px solid var(--accent);padding:24px 32px;background:#fdfcf7;box-shadow:4px 4px 0 rgba(214,81,8,.1);line-height:1.5;margin:20px}
+@media screen and (max-width:900px) and (orientation:portrait){
+  #land-overlay{display:flex}
+  #wrap{display:none !important}
+}
+button{touch-action:manipulation}

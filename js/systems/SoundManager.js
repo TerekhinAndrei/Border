@@ -20,11 +20,23 @@ export class SoundManager {
   /** Инициализация при первом взаимодействии (Safari/Chrome requirement) */
   init() {
     if (this.isStopping) return; // Wait for stop to finish
-    if (this.isStarted) return;
+    if (this.isStarted) {
+      if (this.ctx && this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      return;
+    }
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     this.ctx = new AudioCtx();
     this.masterGain = this.ctx.createGain();
     this.masterGain.connect(this.ctx.destination);
+    
+    // Play a silent buffer to unlock iOS AudioContext securely
+    const osc = this.ctx.createOscillator();
+    osc.connect(this.ctx.destination);
+    osc.start(0);
+    osc.stop(0.001);
+
     this.isStarted = true;
     this._setupMusic();
   }
