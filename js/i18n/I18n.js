@@ -46,6 +46,7 @@ const TABLE = {
     menu_tagline: 'Сколько жизней стоит километр?',
     menu_settings: 'Настройки',
     menu_version: 'веб · концепт',
+    menu_credits: 'Разработано Энди Терехиным, CEO <a href="https://terekhindt.com" target="_blank">Terekhin Digital Crew</a><br>В поддержку мира и против милитаризма',
     pause_title: 'Пауза',
     pause_resume: 'Продолжить',
     pause_restart: 'Заново',
@@ -131,6 +132,7 @@ const TABLE = {
     menu_tagline: 'What is the price of a kilometer?',
     menu_settings: 'Settings',
     menu_version: 'web · concept',
+    menu_credits: 'Developed by Andy Terekhin, CEO of <a href="https://terekhindt.com" target="_blank">Terekhin Digital Crew</a><br>In support of world peace and against militarism',
     pause_title: 'Paused',
     pause_resume: 'Resume',
     pause_restart: 'Restart',
@@ -212,6 +214,8 @@ export class I18n {
     setText('menu-help', this.t('menu_help'));
     setText('menu-tagline', this.t('menu_tagline'));
     setText('menu-version', this.t('menu_version'));
+    const credits = el('menu-credits');
+    if (credits) credits.innerHTML = this.t('menu_credits');
     setText('pause-title', this.t('pause_title'));
     setText('pause-resume', this.t('pause_resume'));
     setText('pause-restart', this.t('pause_restart'));
