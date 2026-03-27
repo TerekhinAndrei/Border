@@ -179,7 +179,8 @@ Whose blood will be spilled next?`,
 export class I18n {
   constructor() {
     /** @type {'ru'|'en'} */
-    this.lang = 'ru';
+    const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    this.lang = browserLang.startsWith('ru') ? 'ru' : 'en';
   }
 
   /** @param {string} key */
