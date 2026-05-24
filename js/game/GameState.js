@@ -29,6 +29,9 @@ export class GameState {
     this.cdL = 0;
     this.cdR = 0;
 
+    this.attacksL = 0;
+    this.attacksR = 0;
+
     /** @type {'dev'|'atk'|'def'|'neu'} */
     this.modeL = 'atk';
     /** @type {'dev'|'atk'|'def'|'neu'} */
@@ -44,7 +47,10 @@ export class GameState {
     // casusText, nameL, nameR не сбрасываются здесь — задаются в showCasus()
     // и должны сохраняться для финального экрана и реванша
 
-    this.threshHit = { 300000: false, 700000: false, 1200000: false };
+    this.threshHit = { 100000: false, 500000: false, 1000000: false };
+
+    /** @type {number|null} */
+    this.exhaustStartMs = null;
 
     this.mapW = 0;
     this.mapH = 0;

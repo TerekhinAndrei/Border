@@ -11,7 +11,7 @@ export class CombatSystem {
   static getAttackParams(attackerMode, defenderMode) {
     const am = ModeRegistry[attackerMode] || ModeRegistry.neu;
     let push = GameConfig.BASE_PUSH * am.pushMult;
-    if (defenderMode === 'def') push *= 0.25;
+    if (defenderMode === 'def') push *= 0.5;
     const cost = GameConfig.BASE_COST * am.costMult;
     return { push, cost, canAtk: am.canAtk };
   }
@@ -33,7 +33,7 @@ export class CombatSystem {
     const atkPop = isLeft ? state.popL : state.popR;
     let cost = Math.floor(atkPop * p.cost);
     if (cost < 1) cost = 1;
-    let defCost = Math.floor(cost * 0.25);
+    let defCost = Math.floor(cost * 0.5);
     if (defCost < 1) defCost = 1;
 
     if (isLeft) {

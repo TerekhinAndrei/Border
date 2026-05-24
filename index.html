@@ -48,6 +48,10 @@
         <button type="button" id="set-lang-en" class="set-tog">EN</button>
       </div>
     </div>
+    <div class="set-row">
+      <span id="set-lbl-statename" class="set-lbl">Имя государства</span>
+      <input type="text" id="set-statename" class="set-text" maxlength="20" autocomplete="off" spellcheck="false">
+    </div>
     <button type="button" id="settings-close" class="menu-secondary" style="margin-top:14px;width:100%">Закрыть</button>
   </div>
 </div>
@@ -55,7 +59,8 @@
   <div class="help-panel">
     <div id="help-title" class="help-h">ИНСТРУКЦИЯ ПО ВЕДЕНИЮ ВОЙНЫ</div>
     <div id="help-text" class="help-content"></div>
-    <button type="button" id="help-close" class="menu-secondary" style="margin-top:20px;width:100%">Вернуться</button>
+    <button type="button" id="help-replay-tutorial" class="menu-secondary" style="margin-top:14px;width:100%">Показать обучение заново</button>
+    <button type="button" id="help-close" class="menu-secondary" style="margin-top:8px;width:100%">Вернуться</button>
   </div>
 </div>
 <div id="s-casus">
@@ -150,6 +155,8 @@
       <div class="demo-card"><span class="demo-icon">👴</span><span class="demo-num" id="d-elderly">—</span><span class="demo-lbl" id="dl-elderly">старики</span></div>
     </div>
     <div class="esl" id="el-d">Продолжительность</div><div class="esv dim" id="ev-d"></div>
+    <div class="esl" id="el-atk">Атак</div><div class="esv dim" id="ev-atk"></div>
+    <div class="esl" id="el-eff">Жизней за километр</div><div class="esv dim" id="ev-eff"></div>
     <div id="e-terrline"></div>
   </div>
   <div id="e-casus"></div>
@@ -169,7 +176,8 @@
       <button type="button" id="mem-save-btn" class="menu-cta" style="width:auto;padding:10px 28px">Запомнить</button>
     </div>
     <div class="mem-list-wrap" id="mem-list-wrap">
-      <div id="mem-list-title" class="mem-list-title">Мемориал этой сессии</div>
+      <div id="mem-list-title" class="mem-list-title">Мемориал</div>
+      <div id="mem-count" class="mem-count"></div>
       <div id="mem-list" class="mem-list"></div>
     </div>
     <div class="mem-nav">
@@ -183,6 +191,18 @@
 </div>
 <div id="land-overlay">
   <div class="land-msg">Please rotate your device</div>
+</div>
+<div id="tut-overlay">
+  <div id="tut-spotlight"></div>
+  <div id="tut-card">
+    <div id="tut-step" class="tut-step"></div>
+    <div id="tut-title" class="tut-title"></div>
+    <div id="tut-body" class="tut-body"></div>
+    <div class="tut-actions">
+      <button type="button" id="tut-skip" class="tut-skip">Пропустить</button>
+      <button type="button" id="tut-next" class="tut-next">Далее</button>
+    </div>
+  </div>
 </div>
 <script type="module" src="js/main.js"></script>
 </body>

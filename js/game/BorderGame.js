@@ -15,6 +15,7 @@ import { CombatSystem } from '../systems/CombatSystem.js';
 import { BattleEffects } from '../systems/BattleEffects.js';
 import { AiController } from '../ai/AiController.js';
 import { SoundManager } from '../systems/SoundManager.js';
+import { Tutorial } from './Tutorial.js';
 import { el, show, hide, setText, rnd, fmt, fmtK, popCol, shuffle } from '../utils/helpers.js';
 
 /**
@@ -29,6 +30,7 @@ export class BorderGame {
     this.renderer = new GameRenderer(this.state, mapCanvas, uiCanvas);
     this.ai = new AiController(this);
     this.sound = new SoundManager();
+    this.tutorial = new Tutorial(this);
 
     this.rafId = 0;
     this.lastTs = null;
@@ -46,11 +48,14 @@ export class BorderGame {
     this.soundOn = true;
     /** @type {'slow'|'normal'|'fast'} */
     this.growthSpeed = 'normal';
+    /** @type {string} Кастомное имя своего государства (пусто = случайное). */
+    this.playerStateName = '';
     this._loadSettings();
 
-    // ── Мемориал (имена погибших, хранятся в сессии) ───────────
+    // ── Мемориал (имена погибших, кросс-сессионно через localStorage) ─
     /** @type {string[]} */
     this.memorialNames = [];
+    this._loadMemorial();
 
     // ── Анимация меню ──────────────────────────────────────────
     this.menuRafId = 0;
@@ -100,6 +105,19 @@ export class BorderGame {
       this.sound.playClick();
       this.closeHelp();
     };
+    const replayBtn = el('help-replay-tutorial');
+    if (replayBtn) {
+      replayBtn.onclick = () => {
+        this.sound.playClick();
+        Tutorial.reset();
+        this.closeHelp();
+        // Если сейчас идёт партия — запускаем поверх неё; иначе туториал запустится
+        // автоматически при следующем startGame.
+        if (window.getComputedStyle(el('s-game')).display !== 'none' && !this.state.isOver) {
+          this.tutorial.start();
+        }
+      };
+    }
 
     el('set-snd-on').onclick = () => {
       this.sound.init();
@@ -144,6 +162,14 @@ export class BorderGame {
     el('set-spd-fast').addEventListener('click', () => this._setSpeedSetting('fast'));
     el('set-lang-ru').addEventListener('click', () => this._setLangSetting('ru'));
     el('set-lang-en').addEventListener('click', () => this._setLangSetting('en'));
+    const statenameInput = el('set-statename');
+    if (statenameInput) {
+      statenameInput.addEventListener('input', (e) => {
+        const v = (e.target.value || '').slice(0, 20);
+        this.playerStateName = v;
+        this._saveSettings();
+      });
+    }
 
     // ── Мемориал ──────────────────────────────────────────────
     el('mem-save-btn').addEventListener('click', () => this._memSave());
@@ -171,6 +197,9 @@ export class BorderGame {
         if (typeof obj.soundOn === 'boolean') this.soundOn = obj.soundOn;
         if (['slow','normal','fast'].includes(obj.growthSpeed)) this.growthSpeed = obj.growthSpeed;
         if (['ru','en'].includes(obj.lang)) this.i18n.lang = obj.lang;
+        if (typeof obj.playerStateName === 'string') {
+          this.playerStateName = obj.playerStateName.slice(0, 20);
+        }
       }
     } catch (_) {}
   }
@@ -181,6 +210,7 @@ export class BorderGame {
         soundOn: this.soundOn,
         growthSpeed: this.growthSpeed,
         lang: this.i18n.lang,
+        playerStateName: this.playerStateName,
       }));
     } catch (_) {}
   }
@@ -224,6 +254,8 @@ export class BorderGame {
     });
     el('set-lang-ru').classList.toggle('active', this.i18n.lang === 'ru');
     el('set-lang-en').classList.toggle('active', this.i18n.lang === 'en');
+    const stn = el('set-statename');
+    if (stn) stn.value = this.playerStateName || '';
   }
 
   toggleLang() {
@@ -320,6 +352,16 @@ export class BorderGame {
     const pair = pairs[rnd(pairs.length)];
     this.state.nameL = pair[0];
     this.state.nameR = pair[1];
+    // Кастомное имя своего государства имеет приоритет над случайным.
+    const customL = (this.playerStateName || '').trim().slice(0, 20);
+    if (customL) {
+      this.state.nameL = customL;
+      // Если противник случайно совпал по имени — берём другую пару для R.
+      if (this.state.nameR === customL) {
+        const altPair = pairs.find(p => p[1] !== customL && p[0] !== customL) || pair;
+        this.state.nameR = altPair[1];
+      }
+    }
     const pool = CasusTemplates[this.i18n.lang](this.state.nameL, this.state.nameR);
     this.state.casusText = pool[rnd(pool.length)];
     setText('cb-head', this.t('cb_head'));
@@ -440,6 +482,12 @@ export class BorderGame {
     // Сбросить состояние звука для новой игры
     this._lastPopTick = 0;
     this._lastAlarmTick = 0;
+
+    // Контекстный туториал для первой партии
+    if (!Tutorial.seen()) {
+      // Даём UI отрисоваться, потом запускаем
+      setTimeout(() => this.tutorial.start(), 100);
+    }
   }
 
   _startCountdown() {
@@ -529,6 +577,8 @@ export class BorderGame {
     const s = this.state;
     const res = CombatSystem.applyAttack(s, isLeft);
     if (!res.ok) return false;
+    if (isLeft) s.attacksL++;
+    else s.attacksR++;
     this.sound.playAtk();
     const side = isLeft ? 'L' : 'R';
     BattleEffects.spawnEvents(s, side);
@@ -630,6 +680,9 @@ export class BorderGame {
       }
     }
 
+    this.checkMutualExhaustion();
+    if (s.isOver) return;
+
     this.renderHudAndUi();
     this.rafId = requestAnimationFrame((t) => this.tick(t));
   }
@@ -729,6 +782,19 @@ export class BorderGame {
     else if (s.popR <= 1) this.endGame('L');
   }
 
+  checkMutualExhaustion() {
+    const s = this.state;
+    if (s.isOver) return;
+    // Обе стороны ниже 5% от стартового населения — порог критического истощения.
+    const limit = GameConfig.START_POP * 0.05;
+    if (s.popL < limit && s.popR < limit) {
+      if (s.exhaustStartMs == null) s.exhaustStartMs = Date.now();
+      else if (Date.now() - s.exhaustStartMs > 15000) this.endGame('D');
+    } else if (s.exhaustStartMs != null) {
+      s.exhaustStartMs = null;
+    }
+  }
+
   endGame(winner) {
     const s = this.state;
     if (s.isOver) return;
@@ -745,7 +811,8 @@ export class BorderGame {
     if (s.switchR.timer) clearTimeout(s.switchR.timer);
     el('abl').disabled = true;
     el('ard').disabled = true;
-    this.setStatus(winner === 'L' ? this.t('s_won') : this.t('s_lost'));
+    const statusKey = winner === 'D' ? 's_draw' : winner === 'L' ? 's_won' : 's_lost';
+    this.setStatus(this.t(statusKey));
 
     setTimeout(() => {
       hide('s-game');
@@ -770,14 +837,27 @@ export class BorderGame {
       setText('ev-r', fmt(s.lostR, loc) + suf);
       setText('ev-t', fmt(s.lostL + s.lostR, loc) + suf);
       setText('ev-d', this.i18n.formatDuration(sec));
+      setText('ev-atk', `${fmt(s.attacksL, loc)} / ${fmt(s.attacksR, loc)}`);
+
       const gainL = Math.round((1 - s.border) * 100) - 50;
       const km = Math.abs(Math.round((gainL / 100) * GameConfig.TOTAL_KM));
-      if (gainL > 0) {
-        setText('e-terrline', s.nameL + this.t('km_won') + km + this.t('km_km'));
-      } else if (gainL < 0) {
-        setText('e-terrline', s.nameR + this.t('km_won') + km + this.t('km_km'));
+      const effL = gainL > 0 && km > 0 ? Math.round(s.lostL / km) : null;
+      const effR = gainL < 0 && km > 0 ? Math.round(s.lostR / km) : null;
+      const effStr = (effL != null ? fmt(effL, loc) : this.t('eff_none'))
+        + ' / '
+        + (effR != null ? fmt(effR, loc) : this.t('eff_none'));
+      setText('ev-eff', effStr);
+
+      if (winner === 'D') {
+        setText('e-terrline', this.t('km_draw'));
       } else {
-        setText('e-terrline', this.t('km_none'));
+        if (gainL > 0) {
+          setText('e-terrline', s.nameL + this.t('km_won') + km + this.t('km_km'));
+        } else if (gainL < 0) {
+          setText('e-terrline', s.nameR + this.t('km_won') + km + this.t('km_km'));
+        } else {
+          setText('e-terrline', this.t('km_none'));
+        }
       }
       setText('e-casus', this.t('e_casus') + s.casusText + this.t('e_casus_suffix'));
       const quotes = EndQuotes[this.i18n.lang];
@@ -798,21 +878,55 @@ export class BorderGame {
     const name = (el('mem-input').value || '').trim();
     if (name) {
       this.memorialNames.push(name);
+      this._saveMemorial();
       el('mem-input').value = '';
       this._renderMemList();
     }
     // не закрываем экран — пользователь сам выбирает кнопку навигации
   }
 
+  _loadMemorial() {
+    try {
+      const raw = localStorage.getItem('border_memorial');
+      if (!raw) return;
+      const obj = JSON.parse(raw);
+      if (Array.isArray(obj?.names)) {
+        this.memorialNames = obj.names.filter(n => typeof n === 'string' && n.length > 0);
+      }
+    } catch (_) {}
+  }
+
+  _saveMemorial() {
+    try {
+      localStorage.setItem('border_memorial', JSON.stringify({ names: this.memorialNames }));
+    } catch (_) {}
+  }
+
+  _pluralizeCount(n) {
+    const lang = this.i18n.lang;
+    if (lang === 'ru') {
+      const mod10 = n % 10;
+      const mod100 = n % 100;
+      if (mod10 === 1 && mod100 !== 11) return this.t('mem_count_one').replace('{n}', n);
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return this.t('mem_count_few').replace('{n}', n);
+      return this.t('mem_count_many').replace('{n}', n);
+    }
+    return (n === 1 ? this.t('mem_count_one') : this.t('mem_count_many')).replace('{n}', n);
+  }
+
   _renderMemList() {
     const list = el('mem-list');
     if (!list) return;
-    if (this.memorialNames.length === 0) {
+    const count = this.memorialNames.length;
+    const countEl = el('mem-count');
+    if (countEl) countEl.textContent = count > 0 ? this._pluralizeCount(count) : '';
+    if (count === 0) {
       list.innerHTML = `<div class="mem-empty">${this.i18n.t('mem_empty')}</div>`;
       return;
     }
+    const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
     list.innerHTML = this.memorialNames
-      .map(n => `<div class="mem-entry">${n}</div>`)
+      .map(n => `<div class="mem-entry">${esc(n)}</div>`)
       .join('');
   }
 
@@ -868,6 +982,7 @@ export class BorderGame {
   boot() {
     document.documentElement.lang = this.i18n.lang;
     this.wireDom();
+    this.tutorial.bindUi();
     this.i18n.applyStaticLabels();
     this._applySettingsUI();
     hide('s-casus');

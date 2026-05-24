@@ -19,10 +19,15 @@ const TABLE = {
     s_exhaust: 'Население исчерпано',
     s_won: 'Территория противника захвачена.',
     s_lost: 'Территория утрачена.',
+    s_draw: 'Обе стороны истощены.',
+    km_draw: 'Война закончилась взаимным истощением. Граница так и не сдвинулась.',
     e_silence: '. . .',
     e_title: 'Война окончена',
     el_t: 'Всего погибло',
     el_d: 'Продолжительность',
+    el_atk: 'Атак',
+    el_eff: 'Жизней за километр',
+    eff_none: '—',
     e_casus: 'Повод: «',
     e_casus_suffix: '»',
     btn_new: 'Новая война',
@@ -40,7 +45,7 @@ const TABLE = {
     ml: 'Режим',
     tip_dev: '📈 +75% рост, нельзя атаковать',
     tip_atk: '⚔️ ×2 сдвиг, нет роста',
-    tip_def: '🛡️ блок 75%, ×2 цена атаки',
+    tip_def: '🛡️ блок 50%, ×2 цена атаки',
     switching: 'Переход 3с...',
     dl_children: 'дети',
     dl_women: 'женщины',
@@ -64,17 +69,34 @@ const TABLE = {
     settings_speed_normal: 'Норма',
     settings_speed_fast: 'Быстро',
     settings_lang: 'Язык',
+    settings_statename: 'Имя государства',
+    settings_statename_placeholder: 'случайное',
     end_to_menu: 'В меню',
     btn_memorial: 'Назвать погибшего',
     mem_prompt: 'Вы можете назвать одного из погибших.',
     mem_sub: 'Введите имя — или нажмите «Пропустить».',
     mem_save: 'Запомнить',
     mem_skip: 'Пропустить',
-    mem_list_title: 'Мемориал этой сессии',
+    mem_list_title: 'Мемориал',
+    mem_count_one: 'вписано {n} имя',
+    mem_count_few: 'вписано {n} имени',
+    mem_count_many: 'вписано {n} имён',
     mem_empty: 'Никто не ввёл имени.',
     menu_help: 'Помощь',
     help_title: 'ИНСТРУКЦИЯ ПО ВЕДЕНИЮ ВОЙНЫ',
     help_close: 'Вернуться',
+    help_replay_tutorial: 'Показать обучение заново',
+    tut_next: 'Далее',
+    tut_skip: 'Пропустить',
+    tut_start: 'Начать',
+    tut_s1_title: 'Население',
+    tut_s1_body: 'Это ваше население — ваш ресурс и ваша единственная цена. Кончится — вы проиграете.',
+    tut_s2_title: 'Атака',
+    tut_s2_body: 'Нажимайте, чтобы атаковать. Граница двигается вперёд, но каждое нажатие — это смерть.',
+    tut_s3_title: 'Три режима',
+    tut_s3_body: '📈 копить · ⚔️ наступать · 🛡️ держать оборону. Переключение между режимами занимает 3 секунды — в это время вы уязвимы.',
+    tut_s4_title: 'Цель',
+    tut_s4_body: 'Победа — когда граница доходит до края противника. Но помните: сколько жизней стоит километр?',
     help_text: `В этой войне нет случайных побед. Каждый километр имеет свою цену — человеческую.
 
 1. РЕСУРС: ВАШЕ НАСЕЛЕНИЕ
@@ -83,7 +105,7 @@ const TABLE = {
 2. ДИНАМИЧЕСКИЕ РЕЖИМЫ (ПЕРЕКЛЮЧЕНИЕ 3С):
 • РАЗВИТИЕ (📈): Останавливает атаку, но даёт огромный прирост населения. Используйте для восстановления после тяжелых боёв.
 • НАСТУПЛЕНИЕ (⚔️): Удваивает силу вашего толчка, но полностью останавливает рост населения.
-• ОБОРОНА (🛡️): Снижает силу вражеского натиска на 75%. Ваши атаки стоят в 2 раза дороже, но продвижение врага блокируется.
+• ОБОРОНА (🛡️): Снижает силу вражеского натиска на 50%. Ваши атаки стоят в 2 раза дороже, но продвижение врага замедляется.
 
 3. ПОБЕДА И ПОРАЖЕНИЕ
 Война окончена, когда граница доходит до столицы одной из сторон или население одной из стран полностью исчерпано.
@@ -108,10 +130,15 @@ const TABLE = {
     s_exhaust: 'Population exhausted',
     s_won: "The enemy's territory has been captured.",
     s_lost: 'Your territory has been lost.',
+    s_draw: 'Both sides are exhausted.',
+    km_draw: 'The war ended in mutual exhaustion. The border never moved.',
     e_silence: '. . .',
     e_title: 'The War Is Over',
     el_t: 'Total dead',
     el_d: 'Duration',
+    el_atk: 'Attacks',
+    el_eff: 'Lives per kilometre',
+    eff_none: '—',
     e_casus: 'Pretext: “',
     e_casus_suffix: '”',
     btn_new: 'New war',
@@ -129,7 +156,7 @@ const TABLE = {
     ml: 'Mode',
     tip_dev: '📈 +75% growth — cannot attack',
     tip_atk: '⚔️ ×2 push — growth halted',
-    tip_def: '🛡️ block 75%, your attack costs ×2',
+    tip_def: '🛡️ block 50%, your attack costs ×2',
     switching: 'Switching — 3s...',
     dl_children: 'children',
     dl_women: 'women',
@@ -153,17 +180,34 @@ const TABLE = {
     settings_speed_normal: 'Normal',
     settings_speed_fast: 'Fast',
     settings_lang: 'Language',
+    settings_statename: 'State name',
+    settings_statename_placeholder: 'random',
     end_to_menu: 'Main menu',
     btn_memorial: 'Name the fallen',
     mem_prompt: 'You may name one of the fallen.',
     mem_sub: 'Enter a name — or press “Skip”.',
     mem_save: 'Remember',
     mem_skip: 'Skip',
-    mem_list_title: 'Memorial of this session',
+    mem_list_title: 'Memorial',
+    mem_count_one: '{n} name inscribed',
+    mem_count_few: '{n} names inscribed',
+    mem_count_many: '{n} names inscribed',
     mem_empty: 'No names have been entered.',
     menu_help: 'Help',
     help_title: 'WAR MANUAL',
     help_close: 'Back',
+    help_replay_tutorial: 'Replay tutorial',
+    tut_next: 'Next',
+    tut_skip: 'Skip',
+    tut_start: 'Start',
+    tut_s1_title: 'Population',
+    tut_s1_body: 'This is your population — your resource and your only currency. If it runs out, you lose.',
+    tut_s2_title: 'Attack',
+    tut_s2_body: 'Press to attack. The border moves forward, but every press is a death.',
+    tut_s3_title: 'Three modes',
+    tut_s3_body: '📈 grow · ⚔️ attack · 🛡️ defend. Switching takes 3 seconds — during that time you are exposed.',
+    tut_s4_title: 'Goal',
+    tut_s4_body: 'You win when the border reaches the enemy edge. But remember: what is the price of a kilometer?',
     help_text: `There are no accidental victories in this war. Every kilometer has a price—a human one.
 
 1. RESOURCE: YOUR POPULATION
@@ -172,7 +216,7 @@ Your population is both your army and your ability to strike. Every "Advance" cl
 2. DYNAMIC MODES (3S SWITCHING):
 • ECONOMY (📈): Halts all attacks but provides massive population growth. Use this to recover after heavy combat.
 • ASSAULT (⚔️): Doubles your pushing power but completely stops population growth.
-• DEFENCE (🛡️): Reduces enemy pushing power by 75%. Your attacks cost 2x more, but the enemy's advance is effectively blocked.
+• DEFENCE (🛡️): Reduces enemy pushing power by 50%. Your attacks cost 2x more, but the enemy's advance is slowed.
 
 3. VICTORY AND DEFEAT
 The war ends when the border reaches either capital or when one nation's population is completely exhausted.
@@ -231,6 +275,9 @@ export class I18n {
     setText('set-lbl-sound', this.t('settings_sound'));
     setText('set-lbl-speed', this.t('settings_speed'));
     setText('set-lbl-lang', this.t('settings_lang'));
+    setText('set-lbl-statename', this.t('settings_statename'));
+    const stn = document.getElementById('set-statename');
+    if (stn) stn.placeholder = this.t('settings_statename_placeholder');
     setText('set-snd-on', this.t('settings_sound_on'));
     setText('set-snd-off', this.t('settings_sound_off'));
     setText('set-spd-slow', this.t('settings_speed_slow'));
@@ -257,6 +304,8 @@ export class I18n {
     setText('e-title', this.t('e_title'));
     setText('el-t', this.t('el_t'));
     setText('el-d', this.t('el_d'));
+    setText('el-atk', this.t('el_atk'));
+    setText('el-eff', this.t('el_eff'));
     setText('btn-new', this.t('btn_new'));
     setText('btn-rematch', this.t('btn_rematch'));
     setText('ml-l', this.t('ml'));
@@ -270,5 +319,8 @@ export class I18n {
     setText('help-title', this.t('help_title'));
     setText('help-text', this.t('help_text'));
     setText('help-close', this.t('help_close'));
+    setText('help-replay-tutorial', this.t('help_replay_tutorial'));
+    setText('tut-next', this.t('tut_next'));
+    setText('tut-skip', this.t('tut_skip'));
   }
 }
