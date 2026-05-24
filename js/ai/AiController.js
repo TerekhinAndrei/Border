@@ -6,26 +6,36 @@ import { GameConfig } from '../config/GameConfig.js';
  *  opt — вероятность сделать атаку в момент проверки
  */
 const DIFF_PARAMS = {
-  easy: { iv: 600, opt: 0.8 },
-  medium: { iv: 600, opt: 0.78 },
-  hard: { iv: 300, opt: 0.92 },
+  easy: { iv: 700, opt: 0.85 },
+  medium: { iv: 550, opt: 0.85 },
+  hard: { iv: 350, opt: 0.95 },
 };
 
 /**
  * Интервал между принятиями решения о смене режима (мс).
+ * Низкое значение — реактивный AI; высокое — задумчивый.
  */
 const MODE_TICK = {
-  easy: 4000,
-  medium: 1500,
-  hard: 1800,
+  easy: 1200,
+  medium: 900,
+  hard: 700,
 };
+
+/**
+ * Пороги Army Reserve с гистерезисом (анти-флип):
+ *  • LOW  — ниже этого порога нужно срочно копить (переход в dev/def)
+ *  • READY — поднявшись выше этого порога, AI возвращается в атаку
+ * Игрок переключается мгновенно; для AI это набор thresholds, чтобы
+ * не дёргаться в район одной цифры.
+ */
+const ARMY_LOW = 6;     // ниже — нельзя нормально вести наступление
+const ARMY_READY = 18;  // выше — снова в атаку
 
 /**
  * ИИ противника с тремя выраженными «характерами»:
  *  • Easy — «безрассудный новобранец»: всегда в атаке, никогда не уходит в защиту.
- *  • Medium — «осторожный офицер»: FSM с состояниями GROW/ATTACK/RECOVER/RUSH.
- *  • Hard — «стратег»: читает игрока (вероятность 0.6) и иногда уходит в финт
- *    (короткая ложная пауза в dev на 2 секунды), провоцируя ход игрока.
+ *  • Medium — «осторожный офицер»: атакует пока есть резерв, при угрозе уходит в def.
+ *  • Hard — «стратег»: читает игрока (вероятность 0.6) и иногда уходит в финт.
  */
 export class AiController {
   /**
@@ -81,6 +91,7 @@ export class AiController {
       if (state.armyR < GameConfig.ARMY_PER_ATTACK) return;
       const now = Date.now();
       if (now - this._aiLastAttack < p.iv) return;
+      // canAtk = true для atk и def. В dev/neu атаковать нельзя.
       if (state.modeR === 'neu' || state.modeR === 'dev') return;
       const maxPop = GameConfig.MAX_POP;
       const ef = state.popL / maxPop;
@@ -96,8 +107,9 @@ export class AiController {
   }
 
   /**
-   * Решает желаемый режим в зависимости от сложности и состояния партии.
-   * Возвращает один из 'dev' | 'atk' | 'def' либо null если менять не нужно.
+   * Возвращает желаемый режим. Использует гистерезис: если AI уже в режиме
+   * восстановления и резерв ещё ниже ARMY_READY — продолжаем копить,
+   * не дёргаемся туда-сюда.
    * @param {'easy'|'medium'|'hard'} diff
    * @param {import('../game/GameState.js').GameState} state
    */
@@ -107,69 +119,95 @@ export class AiController {
     return this._decideHard(state);
   }
 
+  /**
+   * Easy — «новобранец»: атакует пока есть армия, восстанавливается в dev.
+   * Никогда не уходит в def — простой реактивный паттерн.
+   */
   _decideEasy(state) {
-    // «Новобранец» — всегда в атаке. Но даже он вынужденно уходит в Развитие,
-    // когда резерв опустошён (правило игры, не стратегия).
-    if (state && state.armyR < GameConfig.ARMY_PER_ATTACK * 1.5) return 'dev';
+    const army = state.armyR;
+    const isRecovering = state.modeR === 'dev';
+    // Если уже копим — продолжаем до полного восстановления (анти-флип).
+    if (isRecovering && army < ARMY_READY) return 'dev';
+    // Резерв опустошён — копить.
+    if (army < ARMY_LOW) return 'dev';
     return 'atk';
   }
 
   /**
-   * Medium FSM: четыре состояния согласно GDD §3.1.2.
-   *   RECOVER (popR < 20%)              → dev
-   *   RUSH    (territoryR < 40%)        → atk (территориальный кризис)
-   *   GROW    (20% ≤ popR < 60%)        → dev (накопление)
-   *   ATTACK  (popR ≥ 60%)              → atk (основной натиск)
+   * Medium — «офицер»: атакует, при угрозе и пустом резерве уходит в защиту,
+   * при критическом населении — в развитие. Использует гистерезис.
    */
   _decideMedium(state) {
     const maxPop = GameConfig.MAX_POP;
-    const mf = state.popR / maxPop;
-    const myTerritory = state.border;
-    const armyLow = state.armyR < GameConfig.ARMY_PER_ATTACK * 2;
-    // Резерв на исходе — копим, иначе кнопка серая и AI стоит зря.
-    if (armyLow) return 'dev';
-    if (mf < 0.2) return 'dev';
-    if (myTerritory < 0.4) return 'atk';
-    if (mf < 0.6) return 'dev';
+    const popFrac = state.popR / maxPop;
+    const army = state.armyR;
+    const playerThreat = state.modeL === 'atk';
+    const inRecovery = state.modeR === 'dev' || state.modeR === 'def';
+
+    // Критическое истощение — безусловно копим. Гистерезис на 12%.
+    if (popFrac < 0.10) return 'dev';
+    if (popFrac < 0.12 && state.modeR === 'dev') return 'dev';
+
+    // Если уже восстанавливаемся и резерв ещё не готов — не дёргаемся.
+    if (inRecovery && army < ARMY_READY) {
+      // Под атакой и резерв пуст — лучше блок, чем dev.
+      if (playerThreat && army < ARMY_LOW * 2) return 'def';
+      return state.modeR;
+    }
+
+    // Резерв опустошён — выбор между def (если бьют) и dev (если спокойно).
+    if (army < ARMY_LOW) {
+      return playerThreat ? 'def' : 'dev';
+    }
+
+    // Территориальный кризис — RUSH в атаку.
+    if (state.border < 0.4) return 'atk';
+
+    // По умолчанию — атакуем. Army Reserve сама всё запейсит.
     return 'atk';
   }
 
   /**
-   * Hard: чтение игрока + редкий финт (имитация dev) для обмана.
+   * Hard — «стратег»: чтение игрока + редкий финт. Гистерезис и реакция на угрозу.
    */
   _decideHard(state) {
     const now = Date.now();
     const maxPop = GameConfig.MAX_POP;
-    const mf = state.popR / maxPop;
-    const ef = state.popL / maxPop;
-    const myTerr = state.border;
-    const armyLow = state.armyR < GameConfig.ARMY_PER_ATTACK * 2;
+    const army = state.armyR;
+    const playerThreat = state.modeL === 'atk';
+    const inRecovery = state.modeR === 'dev' || state.modeR === 'def';
 
-    // Резерв опустошён — нет смысла стоять в атаке, копим в dev.
-    if (armyLow) return 'dev';
+    // Критическое истощение.
+    if (state.popR / maxPop < 0.10) return 'dev';
 
-    // Если финт ещё активен — держим dev, чтобы спровоцировать атаку игрока.
+    // Финт активен — держим dev (имитация уязвимости).
     if (now < this._feintUntilMs) return 'dev';
 
-    // 12% шанс начать новый финт на 2 секунды, но только при здоровом запасе населения.
-    if (mf > 0.35 && Math.random() < 0.12) {
-      this._feintUntilMs = now + 2000;
+    // Гистерезис восстановления.
+    if (inRecovery && army < ARMY_READY) {
+      if (playerThreat && army < ARMY_LOW * 2) return 'def';
+      return state.modeR;
+    }
+
+    // Резерв опустошён.
+    if (army < ARMY_LOW) {
+      return playerThreat ? 'def' : 'dev';
+    }
+
+    // Финт: при полной армии и здоровом населении 15% шанс короткой ловушки.
+    if (army >= ARMY_READY && Math.random() < 0.15) {
+      this._feintUntilMs = now + 1800;
       return 'dev';
     }
 
-    // Чтение игрока (вероятность 0.6).
+    // Чтение игрока (60%).
     if (Math.random() < 0.6) {
       if (state.modeL === 'atk') return 'def';
-      if (state.modeL === 'def') return 'dev';
+      if (state.modeL === 'def') return 'atk'; // не сидим в dev зря, кусаем в обмен
       return 'atk';
     }
 
-    // Запасная эвристика.
-    if (mf < 0.15) return 'dev';
-    if (myTerr < 0.35) return 'atk';
-    const pr = state.popR / Math.max(1, state.popL);
-    if (pr > 1.4) return 'atk';
-    if (ef < 0.15) return 'atk';
-    return Math.random() < 0.4 ? 'dev' : 'atk';
+    // По умолчанию агрессивны.
+    return 'atk';
   }
 }
