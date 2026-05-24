@@ -129,8 +129,14 @@
     </div>
   </div>
   <div id="ctrl-row">
-    <button type="button" class="abtn" id="abl">&#9664; <span id="hint-abl">наступать</span> <span class="hkh">[A]</span></button>
-    <button type="button" class="abtn" id="ard"><span class="hkh">[L]</span> <span id="hint-ard">наступать</span> &#9654;</button>
+    <div class="abtn-wrap">
+      <button type="button" class="abtn" id="abl">&#9664; <span id="hint-abl">наступать</span> <span class="hkh">[A]</span></button>
+      <div class="army-track"><div class="army-bar" id="army-l"></div><div class="army-lbl" id="army-lbl-l">армия</div></div>
+    </div>
+    <div class="abtn-wrap">
+      <button type="button" class="abtn" id="ard"><span class="hkh">[L]</span> <span id="hint-ard">наступать</span> &#9654;</button>
+      <div class="army-track"><div class="army-bar" id="army-r"></div><div class="army-lbl" id="army-lbl-r">армия</div></div>
+    </div>
   </div>
   <div id="statusbar"></div>
   <div id="pause-overlay">

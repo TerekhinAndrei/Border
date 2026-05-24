@@ -159,7 +159,13 @@ export const MicroStories = Object.freeze({
     'Братья по общей могиле',
     'Танки шли лениво, как сытые звери',
     'Нас просто забыли здесь',
-    'Больше нечем стрелять'
+    'Больше нечем стрелять',
+    'Резервистов вызывают пятый раз за месяц',
+    'Призывной возраст снизили до семнадцати',
+    'Полк отказался идти в наступление',
+    'Дезертирство в третьей роте — расстреляли каждого пятого',
+    'Окопы пусты. Призывают тех, кто уже бежал из страны',
+    'Маршал сказал: «У нас ещё есть резервы». Резервов нет'
   ],
   en: [
     'Now he knows "please" in five languages',
@@ -271,7 +277,13 @@ export const MicroStories = Object.freeze({
     'They just forgot about us here',
     'The lieutenant sat on the ground',
     'According to the map, there should be a forest here. Only stumps and corpses',
-    'Nothing left to shoot with'
+    'Nothing left to shoot with',
+    'Reservists are being called up for the fifth time this month',
+    'The conscription age has been lowered to seventeen',
+    'The regiment refused to advance',
+    'Desertion in the third company — every fifth man was shot',
+    'The trenches are empty. Even those who fled the country are being called back',
+    'The marshal said: "We still have reserves". There are no reserves'
   ],
 });
 

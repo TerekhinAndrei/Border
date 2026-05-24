@@ -215,6 +215,13 @@ select#diff-sel{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3p
 #mp-r .hkh { margin-right: 8px; margin-left: 0; }
 .abtn .hkh { font-size: 10px; opacity: 0.4; margin: 0 8px; }
 
+/* ─── Army Reserve UI ─── */
+.abtn-wrap{display:flex;flex-direction:column;gap:2px}
+.army-track{position:relative;height:8px;background:rgba(0,0,0,0.07);border:1px solid var(--border-col);overflow:hidden}
+.army-bar{height:100%;width:100%;background:var(--accent);transition:width .12s linear,background .2s}
+.army-bar.low{background:#C0392B}
+.army-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--ink);mix-blend-mode:difference;opacity:.85;pointer-events:none}
+
 /* ─── Landscape Overlay ─── */
 #land-overlay{display:none;position:fixed;inset:0;z-index:9999;background:var(--bg);color:var(--ink);align-items:center;justify-content:center;text-align:center}
 .land-msg{font-family:'Share Tech Mono',monospace;font-size:14px;border:1px solid var(--accent);padding:24px 32px;background:#fdfcf7;box-shadow:4px 4px 0 rgba(214,81,8,.1);line-height:1.5;margin:20px}

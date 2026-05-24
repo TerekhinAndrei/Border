@@ -97,6 +97,10 @@ const TABLE = {
     tut_s3_body: '📈 копить · ⚔️ наступать · 🛡️ держать оборону. Переключение между режимами занимает 3 секунды — в это время вы уязвимы.',
     tut_s4_title: 'Цель',
     tut_s4_body: 'Победа — когда граница доходит до края противника. Но помните: сколько жизней стоит километр?',
+    tut_s5_title: 'Резерв армии',
+    tut_s5_body: 'У вас есть резерв на ~6 атак. Когда он кончится — кнопка станет серой. Переключайтесь в 📈 Развитие, чтобы пополнить армию. Спам атаки — путь к поражению.',
+    s_no_army: 'Армия истощена. Переключитесь в Развитие.',
+    tip_army: 'Резерв атак',
     help_text: `В этой войне нет случайных побед. Каждый километр имеет свою цену — человеческую.
 
 1. РЕСУРС: ВАШЕ НАСЕЛЕНИЕ
@@ -107,7 +111,10 @@ const TABLE = {
 • НАСТУПЛЕНИЕ (⚔️): Удваивает силу вашего толчка, но полностью останавливает рост населения.
 • ОБОРОНА (🛡️): Снижает силу вражеского натиска на 50%. Ваши атаки стоят в 2 раза дороже, но продвижение врага замедляется.
 
-3. ПОБЕДА И ПОРАЖЕНИЕ
+3. РЕЗЕРВ АРМИИ
+Каждая атака тратит 5 единиц резерва из 30. Без резерва кнопка атаки серая. Резерв восстанавливается только в Развитии (+4 в секунду) или медленнее в Обороне (+1.5). Это значит: жать только атаку — невозможно. Игра требует ритма «волна → пауза → волна».
+
+4. ПОБЕДА И ПОРАЖЕНИЕ
 Война окончена, когда граница доходит до столицы одной из сторон или население одной из стран полностью исчерпано.
 
 Чья кровь прольётся следующей?`,
@@ -208,6 +215,10 @@ const TABLE = {
     tut_s3_body: '📈 grow · ⚔️ attack · 🛡️ defend. Switching takes 3 seconds — during that time you are exposed.',
     tut_s4_title: 'Goal',
     tut_s4_body: 'You win when the border reaches the enemy edge. But remember: what is the price of a kilometer?',
+    tut_s5_title: 'Army reserve',
+    tut_s5_body: 'You have a reserve for ~6 attacks. When it runs out, the button greys out. Switch to 📈 Develop to replenish. Button-mashing is a losing strategy.',
+    s_no_army: 'Army exhausted. Switch to Develop.',
+    tip_army: 'Attack reserve',
     help_text: `There are no accidental victories in this war. Every kilometer has a price—a human one.
 
 1. RESOURCE: YOUR POPULATION
@@ -218,7 +229,10 @@ Your population is both your army and your ability to strike. Every "Advance" cl
 • ASSAULT (⚔️): Doubles your pushing power but completely stops population growth.
 • DEFENCE (🛡️): Reduces enemy pushing power by 50%. Your attacks cost 2x more, but the enemy's advance is slowed.
 
-3. VICTORY AND DEFEAT
+3. ARMY RESERVE
+Each attack drains 5 of 30 reserve points. With no reserve, the attack button greys out. Reserve replenishes only in Economy (+4 per second) or slower in Defence (+1.5). This means: spamming attack is impossible. The game demands a rhythm of "wave → pause → wave".
+
+4. VICTORY AND DEFEAT
 The war ends when the border reaches either capital or when one nation's population is completely exhausted.
 
 Whose blood will be spilled next?`,
@@ -310,6 +324,8 @@ export class I18n {
     setText('btn-rematch', this.t('btn_rematch'));
     setText('ml-l', this.t('ml'));
     setText('ml-r', this.t('ml'));
+    setText('army-lbl-l', this.t('tip_army'));
+    setText('army-lbl-r', this.t('tip_army'));
     const ds = el('diff-sel');
     if (ds) {
       ds.options[0].text = this.t('d_med');

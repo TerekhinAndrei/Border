@@ -16,6 +16,7 @@ export class Tutorial {
       { target: '#pb-l', key: 's1' },
       { target: '#mp-l .mode-btns', key: 's3' },
       { target: '#abl', key: 's2' },
+      { target: '.abtn-wrap:first-child .army-track', key: 's5' },
       { target: '#arena', key: 's4' },
     ];
     this._onResize = () => this._reposition();

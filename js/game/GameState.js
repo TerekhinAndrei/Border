@@ -32,6 +32,10 @@ export class GameState {
     this.attacksL = 0;
     this.attacksR = 0;
 
+    // Army Reserve (Option C) — резерв атак, без которого нельзя бить.
+    this.armyL = GameConfig.START_ARMY;
+    this.armyR = GameConfig.START_ARMY;
+
     /** @type {'dev'|'atk'|'def'|'neu'} */
     this.modeL = 'atk';
     /** @type {'dev'|'atk'|'def'|'neu'} */

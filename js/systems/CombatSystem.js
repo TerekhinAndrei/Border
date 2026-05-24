@@ -28,7 +28,15 @@ export class CombatSystem {
     const aMode = isLeft ? state.modeL : state.modeR;
     const dMode = isLeft ? state.modeR : state.modeL;
     const p = CombatSystem.getAttackParams(aMode, dMode);
-    if (!p.canAtk) return { ok: false, attackerCost: 0 };
+    if (!p.canAtk) return { ok: false, attackerCost: 0, reason: 'mode' };
+
+    // Army Reserve: без резерва атаковать нельзя.
+    const army = isLeft ? state.armyL : state.armyR;
+    if (army < GameConfig.ARMY_PER_ATTACK) {
+      return { ok: false, attackerCost: 0, reason: 'no_army' };
+    }
+    if (isLeft) state.armyL = Math.max(0, state.armyL - GameConfig.ARMY_PER_ATTACK);
+    else state.armyR = Math.max(0, state.armyR - GameConfig.ARMY_PER_ATTACK);
 
     const atkPop = isLeft ? state.popL : state.popR;
     let cost = Math.floor(atkPop * p.cost);

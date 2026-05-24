@@ -612,6 +612,10 @@ export class BorderGame {
       this.setStatus(this.t('s_exhaust'));
       return;
     }
+    if (s.armyL < GameConfig.ARMY_PER_ATTACK) {
+      this.setStatus(this.t('s_no_army'));
+      return;
+    }
     const now = Date.now();
     if (now - s.cdL < GameConfig.CD_MS) return;
     s.cdL = now;
@@ -624,6 +628,7 @@ export class BorderGame {
     if (s.modeR === 'neu') return;
     if (!ModeRegistry[s.modeR].canAtk) return;
     if (s.popR <= 1) return;
+    if (s.armyR < GameConfig.ARMY_PER_ATTACK) return;
     const now = Date.now();
     if (now - s.cdR < GameConfig.CD_MS) return;
     s.cdR = now;
@@ -652,6 +657,16 @@ export class BorderGame {
     const gmR = ModeRegistry[s.modeR] ? ModeRegistry[s.modeR].growMult : 1;
     s.popL = Math.min(max, s.popL + s.popL * gr * (1 - s.popL / max) * tL * gmL * dt);
     s.popR = Math.min(max, s.popR + s.popR * gr * (1 - s.popR / max) * tR * gmR * dt);
+
+    // Регенерация резерва армии в зависимости от текущего режима.
+    const armyRegenFor = (mode) => {
+      if (mode === 'dev') return GameConfig.ARMY_REGEN_DEV;
+      if (mode === 'def') return GameConfig.ARMY_REGEN_DEF;
+      if (mode === 'neu') return GameConfig.ARMY_REGEN_NEU;
+      return GameConfig.ARMY_REGEN_ATK;
+    };
+    s.armyL = Math.min(GameConfig.MAX_ARMY, s.armyL + armyRegenFor(s.modeL) * dt);
+    s.armyR = Math.min(GameConfig.MAX_ARMY, s.armyR + armyRegenFor(s.modeR) * dt);
 
     for (let i = s.events.length - 1; i >= 0; i--) {
       s.events[i].life -= dt * 0.7;
@@ -713,7 +728,24 @@ export class BorderGame {
     el('num-l').style.color = cL;
     el('num-r').textContent = fmtK(s.popR);
     el('num-r').style.color = cR;
-    el('abl').disabled = s.isOver || s.modeL === 'dev' || s.modeL === 'neu';
+    const lowArmyL = s.armyL < GameConfig.ARMY_PER_ATTACK;
+    const lowArmyR = s.armyR < GameConfig.ARMY_PER_ATTACK;
+    el('abl').disabled = s.isOver || s.modeL === 'dev' || s.modeL === 'neu' || lowArmyL;
+    el('ard').disabled = s.isOver || s.modeR === 'dev' || s.modeR === 'neu' || lowArmyR
+                       || s.gameMode !== '2p';
+
+    // Полоса резерва армии.
+    const armyPct = (a) => Math.max(0, Math.min(100, (a / GameConfig.MAX_ARMY) * 100));
+    const armyEl = el('army-l');
+    const armyREl = el('army-r');
+    if (armyEl) {
+      armyEl.style.width = `${armyPct(s.armyL)}%`;
+      armyEl.classList.toggle('low', lowArmyL);
+    }
+    if (armyREl) {
+      armyREl.style.width = `${armyPct(s.armyR)}%`;
+      armyREl.classList.toggle('low', lowArmyR);
+    }
     this.renderer.drawUiOverlay();
   }
 

@@ -77,6 +77,8 @@ export class AiController {
         return;
       }
       if (state.popR <= 1) return;
+      // Без резерва атаковать нельзя — даже AI обязан переждать.
+      if (state.armyR < GameConfig.ARMY_PER_ATTACK) return;
       const now = Date.now();
       if (now - this._aiLastAttack < p.iv) return;
       if (state.modeR === 'neu' || state.modeR === 'dev') return;
@@ -100,13 +102,15 @@ export class AiController {
    * @param {import('../game/GameState.js').GameState} state
    */
   _decideMode(diff, state) {
-    if (diff === 'easy') return this._decideEasy();
+    if (diff === 'easy') return this._decideEasy(state);
     if (diff === 'medium') return this._decideMedium(state);
     return this._decideHard(state);
   }
 
-  _decideEasy() {
-    // «Новобранец» — всегда в атаке.
+  _decideEasy(state) {
+    // «Новобранец» — всегда в атаке. Но даже он вынужденно уходит в Развитие,
+    // когда резерв опустошён (правило игры, не стратегия).
+    if (state && state.armyR < GameConfig.ARMY_PER_ATTACK * 1.5) return 'dev';
     return 'atk';
   }
 
@@ -121,6 +125,9 @@ export class AiController {
     const maxPop = GameConfig.MAX_POP;
     const mf = state.popR / maxPop;
     const myTerritory = state.border;
+    const armyLow = state.armyR < GameConfig.ARMY_PER_ATTACK * 2;
+    // Резерв на исходе — копим, иначе кнопка серая и AI стоит зря.
+    if (armyLow) return 'dev';
     if (mf < 0.2) return 'dev';
     if (myTerritory < 0.4) return 'atk';
     if (mf < 0.6) return 'dev';
@@ -136,6 +143,10 @@ export class AiController {
     const mf = state.popR / maxPop;
     const ef = state.popL / maxPop;
     const myTerr = state.border;
+    const armyLow = state.armyR < GameConfig.ARMY_PER_ATTACK * 2;
+
+    // Резерв опустошён — нет смысла стоять в атаке, копим в dev.
+    if (armyLow) return 'dev';
 
     // Если финт ещё активен — держим dev, чтобы спровоцировать атаку игрока.
     if (now < this._feintUntilMs) return 'dev';
